@@ -3,14 +3,24 @@
     <nav-bar class="home-nav">
       <div slot="center">购物街</div>
     </nav-bar>
-    <home-swiper :banners="banners"/>
-    <home-recommend-view :recommend="recommend"/>
-    <feature-view/>
-    <tab-control :titles="['流行','新款','精选']"
-                 class="tab-control"
-                 @tabClick="tabClick"/>
-    <good-list :goods="showGoods"/>
-
+    <scroll class="content"
+            ref="scroll"
+            :probe-type="3"
+            @scroll="contentScroll"
+            :pull-up-load="true"
+            @pullingUp="loadMore">
+            
+      <div>
+        <home-swiper :banners="banners"/>
+        <home-recommend-view :recommend="recommend"/>
+        <feature-view/>
+        <tab-control :titles="['流行','新款','精选']"
+                     class="tab-control"
+                     @tabClick="tabClick"/>
+        <good-list :goods="showGoods"/>
+      </div>
+    </scroll>
+    <back-top @click.native="backClick" v-show="isShowBackTop"/>
   </div>
 </template>
 
@@ -24,6 +34,8 @@
   import TabBarItem from "components/common/tabbar/TabBarItem";
   import TabControl from "components/common/tabControl/TabControl";
   import GoodList from "components/content/goods/GoodList";
+  import scroll from "components/common/scroll/scroll";
+  import BackTop from "components/content/backTop/BackTop";
 
   import {getHomeMultiData, getHomeGoods} from "network/home";
 
@@ -36,7 +48,10 @@
       HomeRecommendView,
       FeatureView,
       TabBarItem,
-      GoodList
+      GoodList,
+      scroll,
+      BackTop
+
     },
     data(){
       return {
@@ -49,7 +64,8 @@
           'new': {'page':0, list: []},
           'sell': {'page':0, list: []},
         },
-        currentType: 'pop'
+        currentType: 'pop',
+        isShowBackTop: false
       }
     },
     created() {
@@ -83,14 +99,23 @@
             break;
         }
       },
+      backClick(){
+        this.$refs.scroll.scrollTop(0, 0, 500)
+      },
+      contentScroll(position){
+        this.isShowBackTop = -position.y > 1000
+      },
+      loadMore(){
+        this.getHomeGoods(this.currentType)
+
+        this.$refs.scroll.scroll.refresh();
+      },
       /*
       * 网咯请求
       * */
       getHomeMultiData() {
         getHomeMultiData()
           .then(res => {
-            console.log(res.data.banner.list)
-
             this.banners = res.data.banner.list;
             this.dKeyword = res.data.dKeyword.list;
             this.keywords = res.data.keywords.list;
@@ -103,6 +128,8 @@
           .then(res => {
            this.goods[type].list.push(...res.data.list)
            this.goods[type].page += 1
+
+            this.$refs.scroll.finishPullUp();
           })
       },
     }
@@ -111,7 +138,10 @@
 
 <style scoped>
   #home {
-    margin-top: 44px;
+    padding-top: 44px;
+    height: 100vh;
+    position: relative;
+    touch-action: none;
   }
   .home-nav {
     background: var(--color-tint);
@@ -125,5 +155,12 @@
   .tab-control{
     position: sticky;
     top: 44px;
+
+  }
+  .content{
+
+    position: absolute;
+    top: 44px;
+    bottom: 49px;
   }
 </style>

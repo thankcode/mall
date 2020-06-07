@@ -7,7 +7,7 @@
 <script>
 
   import GoodListItem from "./GoodListItem";
-
+  
   export default {
     name: "GodList",
     components: {

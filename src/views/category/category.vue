@@ -107,11 +107,6 @@
 
 <script>
 
-  import BScroll from '@better-scroll/core'
-  import PullUp from '@better-scroll/pull-up'
-
-
-  BScroll.use(PullUp)
 
   export default {
     name: "category",
@@ -121,16 +116,7 @@
       }
     },
     mounted() {
-        this.scroll = new BScroll('.content', {
-          probeType: 3,
-          pullUpLoad: true
-        })
 
-        this.scroll.on('pullingUp', () => {
-          console.log('上拉加载')
-
-          this.find
-        })
       }
   }
 </script>
